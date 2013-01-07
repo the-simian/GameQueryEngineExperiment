@@ -41,7 +41,8 @@
 
             /*Engine Values*/
             var $playground = $('#playground');
-
+            var playgroundWidth =   1366;
+            var playgroundHeight = 250;
 
             /*Background Values*/
 
@@ -57,8 +58,7 @@
             var background2r = new $.gameQuery.Animation({ imageURL: "Content/background_images/starfield_2r.png" });
             var background3r = new $.gameQuery.Animation({ imageURL: "Content/background_images/starfield_2r.png" });
 
-            var playgroundWidth =   1366;
-            var playgroundHeight = 250;
+
 
             var backgroundMovementRate = 60;
             
@@ -138,32 +138,69 @@
             $.playground().registerCallback(moveBackgroundTiles, backgroundMovementRate);
 
 
-
-            var fireballs = [];
-            fireballs[0] = [];
-
-            fireballs[0]['normal'] = new $.gameQuery.Animation({
+            /*PlayerAnimation*/
             
-                imageUrl: "Content/spritemaps/fireballs/fire_orb_32_32.png",
-                numberOfFrames: 31,
+            var playerAnimation = [];
 
-                delta: 52,
-                rate: 15,
-                type: $.gameQuery.ANIMATION_VERTICAL
-            
-            
-            })
+            playerAnimation['idle'] = new $.gameQuery.Animation({imageURL:"Content/spritemaps/player/ship-blue_128_64.png"});
+            playerAnimation['explode'] = new $.gameQuery.Animation({imageURL:"Content/spritemaps/player/explode_2048_1536.png"});
+
+            playerAnimation['thruster'] = new $.gameQuery.Animation({
+                                                                        imageURL:"Content/spritemaps/player/thruster_32_64.png", 
+                                                                        numberOfFrame:15, 
+                                                                        delta:64, 
+                                                                        rate:10, 
+                                                                        type: $.gameQuery.ANIMATION_HORIZONTAL
+                                                                    });
+  
+
+            $playground
+            .addGroup('actors', {width: playgroundWidth, height:playgroundHeight})
+            .addGroup('player', {posx:300, posy:100, width:128, height:64})
+                .addSprite('playerBody', {animation: playerAnimation['idle'], posx:0, posy:0, width:128, height:64})
+                .addSprite('playerThruster',{ posx:-62, posy:13, width:64, height:32})
+                ;
 
 
 
+            //player keybinding
+            var allowRight = true;
+             //this is where the keybinding occurs
+            $(document).keydown(function(e){
+                switch(e.keyCode){
+                    case 65: //this is left! (a)
+                        $("#playerThruster").setAnimation();
+                        break;
+                    case 68: //this is right (d)
 
+                        if(allowRight){
+                        $("#playerThruster").setAnimation(playerAnimation["thruster"]);
+                        allowRight = false;
+                        }
+                        
 
+                        
+                        break;
 
-            
+                }
+            });
+            //this is where the keybinding occurs
+            $(document).keyup(function(e){
+                switch(e.keyCode){
+                    case 65: //this is left! (a)
+                        $("#playerThruster").setAnimation();
+                        break;
+                    case 68: //this is right (d)
+                        $("#playerThruster").setAnimation();
+
+                        allowRight = true;
+                        break;
+
+                }
+            });
 
 
             /*Start The Game*/
-
             $.playground().startGame();
         });
 
