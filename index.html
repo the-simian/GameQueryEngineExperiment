@@ -1,0 +1,176 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Game Query Example</title>
+    <link href="Content/themes/base/minified/jquery-ui.min.css" rel="stylesheet" type="text/css" />
+    <script src="scripts/jquery-1.8.3.min.js" type="text/javascript"></script>
+    <script src="scripts/gameQuery.0.7.0.js" type="text/javascript"></script>
+    <script src="scripts/gameQuery.sound.0.6.js" type="text/javascript"></script>
+    <script src="scripts/jquery-ui-1.9.2.min.js" type="text/javascript"></script>
+    <script src="scripts/knockout-2.2.0.js" type="text/javascript"></script>
+    <style>
+        #playground
+        {
+            position: relative !important;
+            margin: 0 auto;
+            display: block;
+           border-radius: 15px;
+             
+        }
+        
+        #playgroundWrapper
+        {
+            margin: 0 auto;
+            display: block;
+            
+            margin-top:10px;
+            width:1366px;
+            border-radius: 15px;
+            
+            background-color:#010101;
+            -webkit-box-shadow: inset 5px 5px 15px 3px rgba(45, 45, 45, 0.7);
+            box-shadow: inset 5px 5px 15px 3px rgba(45, 45, 45, 0.7);
+            
+        }
+    </style>
+</head>
+<body>
+    <script>
+        $(document).ready(function () {
+            
+
+            /*Engine Values*/
+            var $playground = $('#playground');
+
+
+            /*Background Values*/
+
+            var OneScrollSpeed = 2;
+            var TwoScrollSpeed = 7;
+            var ThreeScrollSpeed = 10;
+
+            var background1 = new $.gameQuery.Animation({ imageURL: "Content/background_images/starfield_1.png" });
+            var background2 = new $.gameQuery.Animation({ imageURL: "Content/background_images/starfield_2.png" });
+            var background3 = new $.gameQuery.Animation({ imageURL: "Content/background_images/starfield_2.png" });
+
+            var background1r = new $.gameQuery.Animation({ imageURL: "Content/background_images/starfield_1r.png" });
+            var background2r = new $.gameQuery.Animation({ imageURL: "Content/background_images/starfield_2r.png" });
+            var background3r = new $.gameQuery.Animation({ imageURL: "Content/background_images/starfield_2r.png" });
+
+            var playgroundWidth =   1366;
+            var playgroundHeight = 250;
+
+            var backgroundMovementRate = 60;
+            
+
+
+            /*Create Playground*/
+            $playground
+            .playground({
+                height: playgroundHeight,
+                width: playgroundWidth,
+                keyTracker: true
+            })
+            .addGroup('background', {
+                width: playgroundWidth,
+                height: playgroundHeight
+            });
+
+            var $background = $('#background');
+
+            $background 
+            .addSprite("background1", {
+                animation: background1,
+                width: playgroundWidth,
+                height: playgroundHeight,
+            })
+            .addSprite("background1r", {
+                animation: background1r,
+                width: playgroundWidth,
+                height: playgroundHeight,
+                posx: playgroundWidth
+            })
+            .addSprite("background2", {
+                animation: background2,
+                width: playgroundWidth,
+                height: playgroundHeight
+            })
+            .addSprite("background2r", {
+                animation: background2r,
+                width: playgroundWidth,
+                height: playgroundHeight,
+                posx: playgroundWidth
+            })
+            .addSprite("background3", {
+                animation: background3,
+                width: playgroundWidth,
+                height: playgroundHeight
+            })
+            .addSprite("background3r", {
+                animation: background3r,
+                width: playgroundWidth,
+                height: playgroundHeight,
+                posx: playgroundWidth
+            });
+
+            var $bk1 =  $('#background1');
+            var $bk2 =  $('#background2');
+            var $bk3 =  $('#background3');
+            var $bk1r =  $('#background1r');
+            var $bk2r =  $('#background2r');
+            var $bk3r =  $('#background3r');
+
+            /*Move Background*/
+            var scrollLeftBackground = function($el, speed){
+                var rate = -1 * (speed)
+                return ((-1* $el.x()) >  playgroundWidth) ? rate + (playgroundWidth * 2) : rate;
+            };
+
+            var moveBackgroundTiles =function () {
+                $bk1.x(scrollLeftBackground($bk1, OneScrollSpeed), true);
+                $bk1r.x(scrollLeftBackground($bk1r, OneScrollSpeed), true);
+                $bk2.x(scrollLeftBackground($bk2, TwoScrollSpeed), true);
+                $bk2r.x(scrollLeftBackground($bk2r, TwoScrollSpeed), true);
+                $bk3.x(scrollLeftBackground($bk2, ThreeScrollSpeed), true);
+                $bk3r.x(scrollLeftBackground($bk2r, ThreeScrollSpeed), true);
+            };
+
+            $.playground().registerCallback(moveBackgroundTiles, backgroundMovementRate);
+
+
+
+            var fireballs = [];
+            fireballs[0] = [];
+
+            fireballs[0]['normal'] = new $.gameQuery.Animation({
+            
+                imageUrl: "Content/spritemaps/fireballs/fire_orb_32_32.png",
+                numberOfFrames: 31,
+
+                delta: 52,
+                rate: 15,
+                type: $.gameQuery.ANIMATION_VERTICAL
+            
+            
+            })
+
+
+
+
+
+
+            
+
+
+            /*Start The Game*/
+
+            $.playground().startGame();
+        });
+
+    </script>
+    <div id="playgroundWrapper">
+        <div id="playground">
+        </div>
+    </div>
+</body>
+</html>
