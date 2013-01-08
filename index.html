@@ -167,27 +167,29 @@
             enemies[0] = [];
             enemies[0]['idle'] = new $.gameQuery.Animation({
                                                             imageURL:"Content/spritemaps/enemy/demon_kitty_128.png", 
-                                                            numberOfFrame:60, 
+                                                            numberOfFrame:59, 
                                                             delta:128, 
-                                                            rate:100, 
+                                                            rate:15, 
                                                             type: $.gameQuery.ANIMATION_HORIZONTAL | $.gameQuery.ANIMATION_CALLBACK
                                                                 
                                                             });
 
 
             enemies[0]['explode'] = new $.gameQuery.Animation({
-                                                            imageURL:"Content/spritemaps/enemy/esplode2_256.png", 
-                                                            numberOfFrames:11,
+                                                            imageURL:"Content/spritemaps/enemy/explode_256.png", 
+                                                            numberOfFrame:11,
                                                             delta:256,
-                                                            rate:60,
-                                                            type: $.gameQuery.ANIMATION_HORIZONTAL});
+                                                            rate:30,
+                                                            type: $.gameQuery.ANIMATION_HORIZONTAL | $.gameQuery.ANIMATION_CALLBACK
+                                                            
+                                                            });
 
 
             
-            $('#actors').addGroup('enemy1',{posx:1000, posy:75, width:128, height:128}).addSprite('enemyBody', {
+            $('#actors').addGroup('enemy1',{posx:1000, posy:25, width:256, height:256}).addSprite('enemyBody', {
             
             
-             animation: enemies[0]['idle'],
+             animation: enemies[0]['1dle'],
             width:128, height:128
             
             });
@@ -210,7 +212,7 @@
                         if(allowRight){
                         $("#playerThruster").setAnimation(playerAnimation["thruster"]);
 
-                        $('#enemyBody').setAnimation(enemies[0]['explode']);
+                        $('#enemyBody').setAnimation(enemies[0]['explode']).css({'width':256, 'height':256});
 
                         allowRight = false;
                         }
@@ -230,7 +232,7 @@
                     case 68: //this is right (d)
                         $("#playerThruster").setAnimation();
 
-                        $('#enemyBody').setAnimation(enemies[0]['idle']);
+                        $('#enemyBody').setAnimation(enemies[0]['idle']).css({'width':128, 'height':128});
 
                         allowRight = true;
                         break;
