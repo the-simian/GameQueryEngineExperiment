@@ -150,7 +150,7 @@
                                                                         numberOfFrame:15, 
                                                                         delta:64, 
                                                                         rate:10, 
-                                                                        type: $.gameQuery.ANIMATION_HORIZONTAL
+                                                                        type: $.gameQuery.ANIMATION_HORIZONTAL 
                                                                     });
   
 
@@ -160,6 +160,40 @@
                 .addSprite('playerBody', {animation: playerAnimation['idle'], posx:0, posy:0, width:128, height:64})
                 .addSprite('playerThruster',{ posx:-62, posy:13, width:64, height:32})
                 ;
+
+            /*Enemy Animation*/
+
+            var enemies = [];
+            enemies[0] = [];
+            enemies[0]['idle'] = new $.gameQuery.Animation({
+                                                            imageURL:"Content/spritemaps/enemy/demon_kitty_128.png", 
+                                                            numberOfFrame:60, 
+                                                            delta:128, 
+                                                            rate:100, 
+                                                            type: $.gameQuery.ANIMATION_HORIZONTAL | $.gameQuery.ANIMATION_CALLBACK
+                                                                
+                                                            });
+
+
+            enemies[0]['explode'] = new $.gameQuery.Animation({
+                                                            imageURL:"Content/spritemaps/enemy/esplode2_256.png", 
+                                                            numberOfFrames:11,
+                                                            delta:256,
+                                                            rate:60,
+                                                            type: $.gameQuery.ANIMATION_HORIZONTAL});
+
+
+            
+            $('#actors').addGroup('enemy1',{posx:1000, posy:75, width:128, height:128}).addSprite('enemyBody', {
+            
+            
+             animation: enemies[0]['idle'],
+            width:128, height:128
+            
+            });
+
+            /*Weapon Missile*/
+
 
 
 
@@ -175,6 +209,9 @@
 
                         if(allowRight){
                         $("#playerThruster").setAnimation(playerAnimation["thruster"]);
+
+                        $('#enemyBody').setAnimation(enemies[0]['explode']);
+
                         allowRight = false;
                         }
                         
@@ -192,6 +229,8 @@
                         break;
                     case 68: //this is right (d)
                         $("#playerThruster").setAnimation();
+
+                        $('#enemyBody').setAnimation(enemies[0]['idle']);
 
                         allowRight = true;
                         break;
