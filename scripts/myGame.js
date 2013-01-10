@@ -118,7 +118,7 @@
 
             $playground
             .addGroup('actors', {width: playgroundWidth, height:playgroundHeight})
-            .addGroup('player', {posx:300, posy:100, width:128, height:64})
+            .addGroup('player', {posx:200, posy:100, width:128, height:64})
                 .addSprite('playerBody', {animation: playerAnimation['idle'], posx:0, posy:0, width:128, height:64})
                 .addSprite('playerThruster',{ posx:-62, posy:13, width:64, height:32})
                 ;
@@ -148,13 +148,7 @@
 
 
             
-            $('#actors').addGroup('enemy1',{posx:1000, posy:25, width:256, height:256}).addSprite('enemyBody', {
-            
-            
-             animation: enemies[0]['1dle'],
-            width:128, height:128
-            
-            });
+            var $actors = $('#actors');
 
             /*Weapon Missile*/
 
@@ -214,9 +208,11 @@
             /*Base Enemy Objects*/
             function Enemy(node) {
                 this.shield = 2;
-                this.speedx = -5;
-                this.speedy = 0;
+                this.speedX = -5;
+                this.speedY = 1;
                 this.$el = $(node);
+
+                this.exploding = false
 
                 // deals with damage endured by an enemy
                 this.damage = function(){
@@ -230,36 +226,50 @@
                 
                 //update position
                 this.update = function(playerNode){
-                    this.updateX(playerNode);
-                    this.updateY(playerNode);
-                };
+
+                   
+
+                        this.updateX(playerNode);
+                        this.updateY(playerNode);
+                    
+
+
+                    //console.log('update called', playerNode, this.$el, this.$el.x(), this.$el.y());
+                }
 
                 this.updateX = function(playerNode){
-                    var newPosition = pareInt(this.$el.css('left')) + this. speedX;
-                    this.$el.css('left', newPosition + "px");
-                };
+                    this.$el.x(this.speedX,true);
+                }
 
                 this.updateY = function(playerNode){
-                    var newPosition = pareInt(this.$el.css('top')) + this. speedY;
-                    this.$el.css('top', newPosition + "px");
-                };
+                    this.$el.y(this.speedY,true);
+                }
             }
 
             //Minion
             function Minion(node){
+                this.speedY = Math.floor(Math.random()*8) - 4 || 2;
+                this.speedX = Math.floor(Math.random()* -7) || -5;
                 this.$el = $(node);
             }
             Minion.prototype = new Enemy();
             Minion.prototype.updateY = function(playerNode){
-                var pos = parseInt(this.$el.css('top'));
-                this.$el.css('top', (pos-2) + 'px');
+                this.$el.y(this.speedY, true); 
+                var pos = this.$el.y();
+                if((pos > ((playgroundHeight) - 129))  ){
+                    this.$el.y(-4, true); 
+                    this.speedY =  -1 * this.speedY;
+                }else if(pos < -1){
+                    this.$el.y(4, true); 
+                    this.speedY =  -1 * this.speedY;
+                }
             }
 
             //Brainy
             function Brainy(node){
                 this.$el = $(node);
                 this.shield = 5;
-                this.speedy = 1;
+                this.speedY = 1;
                 this.alignmentOffset = 5;
             }
             Brainy.prototype = new Enemy();
@@ -286,21 +296,127 @@
             }
             Boss.prototype = new Brainy();
             Boss.prototype.updateX = function(){
-                var pos = parseInt(this.$el.css('left'));
+                var pos = this.$el.x();
                 if(pos > (playgroundWidth - 200)){
-                    this.$el.css('left', pos + this.speedx + 'px');
+                    this.$el.x( this.speedx);
                 }
             }
 
 
 
+            //enemy generation
+            var enemyGenerationRate = 1000;
+
+            var bossMode = false;
+            var gameOver = false;
+
+            var generateEnemies = function(){
+                    
+
+                
+
+                if(!bossMode && !gameOver){
+                    if(Math.random() < 0.4){
+
+                      var name = "enemy1_" + Math.ceil(Math.random()*1000);
+                      $actors.addSprite(name, {
+                            animation: enemies[0]['idle'] , 
+                            posx: playgroundWidth -128, 
+                            posy: Math.random() * playgroundHeight,
+                            width: 128, 
+                            height: 128
+                          
+                          }
+                        );
+
+                        var $thisEnemy = $("#"+name);
+
+                      $thisEnemy.addClass("enemy");
+                      $thisEnemy[0].enemy = new Minion($thisEnemy);
+
+                    }
+                } 
+
+            };
+
+            $.playground().registerCallback(generateEnemies, enemyGenerationRate);
+
+            /*enemy movement*/
+
+            var enemyMovementnRate = 35;
+
+            var moveEnemies = function(){
+                if(!gameOver){
+                    var $player = $('#player');
+                    var $enemies = $playground.find('.enemy');
+
+                    $enemies.each(function(event, el){
+                        var $el = $(el);
+                        
+
+
+                        if(!this.exploding){
+                        
+                            this.enemy.update($player);
+                            var posx = $el.x();
+                            if( posx + 256 < 0){
+                                $el.remove();
+                                return;
+                            }
+                        }
+
+
+                        var $collided = $el.collision(".gQ_group, #playerBody");
+
+
+                        
+
+                        if($collided.length){
+                            if(this.enemy instanceof Minion){
+                               this.exploding = true; 
+                                
+                              $(this)
+                              .css({'width' : 256, 'height': 256, 'z-index': 9999}).x(-64, true).y(-64, true)
+                              .setAnimation(enemies[0]["explode"], function(node){$(node).remove();})
+
+                              ;
+                            }
+
+
+                            $(this).removeClass("enemy");
 
 
 
 
+                            //you got rammed!
 
 
 
+                            
+
+//                            if($("#player")[0].player.damage()){
+//                            
+//                            
+//                                $('body').css({'background-color' : 'red'});
+//                            
+//                            }
+
+                        }
+
+
+                 
+
+
+                    });
+
+                    
+
+                }
+
+            };
+
+
+            $.playground().registerCallback(moveEnemies, enemyMovementnRate);
 
             //player keybinding
             var allowRight = true;
@@ -313,7 +429,6 @@
                     case 68: //this is right (d)
                         if(allowRight){
                         $("#playerThruster").setAnimation(playerAnimation["thruster"]);
-                        $('#enemyBody').setAnimation(enemies[0]['explode']).css({'width':256, 'height':256});
                         allowRight = false;
                         }
                         break;
@@ -330,7 +445,6 @@
                     case 68: //this is right (d)
                         $("#playerThruster").setAnimation();
 
-                        $('#enemyBody').setAnimation(enemies[0]['idle']).css({'width':128, 'height':128});
 
                         allowRight = true;
                         break;
