@@ -543,6 +543,8 @@
             
             };
 
+            console.log('gh-pages');
+
             $playground.registerCallback(checkPlayerPosition, 30);
 
             //player keybinding
