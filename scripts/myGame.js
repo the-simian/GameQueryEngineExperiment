@@ -122,6 +122,9 @@
                 .addSprite('playerBody', {animation: playerAnimation['idle'], posx:0, posy:0, width:128, height:64})
                 .addSprite('playerThruster',{ posx:-62, posy:13, width:64, height:32})
                 ;
+            
+            $playground.addGroup('playerMissileLayer',{width: playgroundWidth, height:playgroundHeight});
+            $playground.addGroup('enemiesMissileLayer',{width: playgroundWidth, height:playgroundHeight});
 
             /*Enemy Animation*/
 
@@ -203,6 +206,12 @@
 
                 return true;
             }
+
+            var $player = $('#player');
+
+            $player.addClass("player");
+            $player[0].player = new Player($player);
+
 
             //TODO: use migration guide to refactor this
             /*Base Enemy Objects*/
@@ -345,6 +354,24 @@
 
             var enemyMovementnRate = 35;
 
+            var playerHit;
+
+            function explodePlayer(playerNode){
+                  playerNode
+                   .css({'width' : 256, 'height': 256, 'z-index': 9999}).x(-64, true).y(-96, true)
+                  .children().hide().end()
+                  .addSprite("explosion",{ 
+                                          animation: enemies[0]['explode'],
+                                          width:256,
+                                          height:256
+
+                                          }).width(256).height(256);
+                
+                    
+                  
+            }
+
+
             var moveEnemies = function(){
                 if(!gameOver){
                     var $player = $('#player');
@@ -394,12 +421,12 @@
 
                             
 
-//                            if($("#player")[0].player.damage()){
-//                            
-//                            
-//                                $('body').css({'background-color' : 'red'});
-//                            
-//                            }
+                            if($player[0].player.damage()){
+                            
+                            
+                               explodePlayer($player)
+                            
+                            }
 
                         }
 
@@ -416,7 +443,107 @@
             };
 
 
-            $.playground().registerCallback(moveEnemies, enemyMovementnRate);
+            $playground.registerCallback(moveEnemies, enemyMovementnRate);
+
+
+            var missiles = {
+                player: {
+                    fireOrb: new $.gameQuery.Animation({
+                                                            imageURL:"Content/spritemaps/fireballs/fire_orb_32_32.png", 
+                                                            numberOfFrame:31,
+                                                            delta:32,
+                                                            rate:30,
+                                                            type: $.gameQuery.ANIMATION_HORIZONTAL | $.gameQuery.ANIMATION_CALLBACK
+                                                        })
+                
+                }
+                
+            
+            
+            };
+
+            var score = 0;
+            var missileSpeed = 14
+            var missileUpdateRate = 30;
+            //update missile movement
+
+            var $missiles;
+
+            var moveMissiles = function(){
+                $missiles = $playground.find('.player-missile');
+                $missiles.each(function(event, el){
+
+                    var $el = $(el);
+                    var posx = $el.x();
+                    $el.x(missileSpeed, true);
+                    if(posx > playgroundWidth){
+                        $el.remove();
+                        return;
+                    }
+
+
+                    
+
+                    //collision
+                   
+                    var $collisions = $el.collision('.gQ_group, .enemy');
+
+                    if($collisions.length){
+                        $collisions.each(function(){
+                        
+                            if($(this)[0].enemy.damage()){
+                                if(this.enemy instanceof Minion){
+                                    $el.remove();
+                                    score ++;
+                                    $('#score').text('Killed: ' + score);
+                                    this.exploding = true; 
+                                
+                                    $(this)
+                                      .css({'width' : 256, 'height': 256, 'z-index': 9999}).x(-64, true).y(-64, true)
+                                      .setAnimation(enemies[0]["explode"], function(node){
+                                        $(node).remove();
+
+
+                                    });
+                                }
+                            }
+                        
+                        });
+                    }
+                });
+            };
+
+            $playground.registerCallback(moveMissiles, missileUpdateRate);
+
+
+            var speed = 9;
+
+            var checkPlayerPosition = function(){
+
+                if($.gameQuery.keyTracker[83]){
+                    $player.y(speed, true);
+                }
+
+                 if($.gameQuery.keyTracker[65]){
+                    $player.x(-speed, true);
+                }
+
+
+                if($.gameQuery.keyTracker[68]){
+                    $player.x(speed, true);
+                }
+
+
+                if($.gameQuery.keyTracker[87]){
+                    $player.y(-speed, true);
+                }
+
+
+            
+            
+            };
+
+            $playground.registerCallback(checkPlayerPosition, 30);
 
             //player keybinding
             var allowRight = true;
@@ -426,11 +553,27 @@
                     case 65: //this is left! (a)
                         $("#playerThruster").setAnimation();
                         break;
+
                     case 68: //this is right (d)
                         if(allowRight){
-                        $("#playerThruster").setAnimation(playerAnimation["thruster"]);
-                        allowRight = false;
+                            $("#playerThruster").setAnimation(playerAnimation["thruster"]);
+                            allowRight = false;
                         }
+                        break;
+                    case 32:
+                        var playerposx = $player.x();
+                        var playerposy = $player.y();
+
+                        var name = "playerMissile_" + Math.ceil(Math.random() * 1000);
+
+                        $('#playerMissileLayer').addSprite(name, {
+                            animation: missiles.player.fireOrb, 
+                            posx: playerposx + 128, 
+                            posy: playerposy + 12,
+                            width:32,
+                            height:32
+                        });
+                        $('#'+name).addClass('player-missile');
                         break;
                 }
             });
@@ -444,8 +587,6 @@
                         break;
                     case 68: //this is right (d)
                         $("#playerThruster").setAnimation();
-
-
                         allowRight = true;
                         break;
                 }
